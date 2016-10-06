@@ -1,8 +1,18 @@
 package in.ishankhanna.tinglingsquares;
 
+import android.animation.Animator;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
+import android.animation.PropertyValuesHolder;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Ishan Khanna
@@ -10,12 +20,12 @@ import android.widget.FrameLayout;
 
 public class TinglingSquaresView extends FrameLayout {
 
-    SquareView[] squareViews = new SquareView[9];
+    SquareView[][] squareViews = new SquareView[3][4];
 
     private Context ctx;
 
-    private int side = 10;
-    private int padding = 2;
+    private int side = 40;
+    private int padding = 8;
     private int w,h;
 
     public TinglingSquaresView(Context context, AttributeSet attrs) {
@@ -30,74 +40,43 @@ public class TinglingSquaresView extends FrameLayout {
         init();
     }
 
-    private void init() {
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        int w = (side * 5) + (padding * 4);
+        int h = (side * 3) + (padding * 2);
+        setLayoutParams(new RelativeLayout.LayoutParams(w, h));
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
     }
 
-    private void initSquares(int w, int h) {
-
-        float cX, cY;
-
-        // MIDDLE LAYER
-
-        // CENTER
-        cX = w/2;
-        cY = h/2;
-        squareViews[4] = new SquareView(ctx, cX, cY);
-
-        // LEFT
-        cX = w/2 - side - padding;
-        cY = h/2;
-        squareViews[3] = new SquareView(ctx, cX, cY);
-
-        // RIGHT
-        cX = w/2 + side + padding;
-        cY = h/2;
-
-        squareViews[5] = new SquareView(ctx, cX, cY);
-
-        // TOP LAYER
-
-        //CENTER
-        cX = w/2;
-        cY = h/2 - side - padding;
-
-        squareViews[1] = new SquareView(ctx, cX, cY);
-
-        //LEFT
-        cX = w/2 - side - padding;
-        cY = h/2 - side - padding;
-
-        squareViews[0] = new SquareView(ctx, cX, cY);
-
-        //RIGHT
-        cX = w/2 + side + padding;
-        cY = h/2 - side - padding;
-
-        squareViews[2] = new SquareView(ctx, cX, cY);
-
-        // BOTTOM LAYER
-        //CENTER
-        cX = w/2;
-        cY = h/2 + side + padding;
-
-        squareViews[7] = new SquareView(ctx, cX, cY);
-
-        //LEFT
-        cX = w/2 - side - padding;
-        cY = h/2 + side + padding;
-
-        squareViews[6] = new SquareView(ctx, cX, cY);
-
-        //RIGHT
-        cX = w/2 + side + padding;
-        cY = h/2 + side + padding;
-
-        squareViews[8] = new SquareView(ctx, cX, cY);
-
-        for (int i=0;i<9;i++) {
-            addView(squareViews[i]);
+    private void init() {
+        for (int m=0;m<3;m++) {
+            for (int n=0;n<4;n++) {
+                squareViews[m][n] = new SquareView(ctx, m, n);
+            }
         }
+
+        PropertyValuesHolder propertyValuesHolder = PropertyValuesHolder.ofFloat(View.ROTATION, 0, 90);
+
+        AnimatorSet animatorSet = new AnimatorSet();
+        List<Animator> animators = new ArrayList<>();
+        for (int m=2;m>=0;m--) {
+            for (int n=3;n>=0;n--) {
+                ObjectAnimator animator = ObjectAnimator.ofPropertyValuesHolder(squareViews[m][n], propertyValuesHolder);
+                animator.setDuration(800);
+                animator.setRepeatCount(ValueAnimator.INFINITE);
+                animator.setRepeatMode(ValueAnimator.REVERSE);
+                animators.add(animator);
+            }
+        }
+
+        animatorSet.playTogether(animators);
+        animatorSet.start();
     }
 
     @Override
@@ -105,8 +84,13 @@ public class TinglingSquaresView extends FrameLayout {
         super.onSizeChanged(w, h, oldw, oldh);
         this.w = w;
         this.h = h;
-        initSquares(w, h);
+        for (int m=0;m<3;m++) {
+            for (int n=0;n<4;n++) {
+                addView(squareViews[m][n]);
+            }
+        }
     }
+
 
 
 }

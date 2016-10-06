@@ -13,8 +13,8 @@
     android:background="@color/colorPrimary">
 
     <in.ishankhanna.tinglingsquares.TinglingSquaresView
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
         android:layout_centerInParent="true"/>
 
 </RelativeLayout>
