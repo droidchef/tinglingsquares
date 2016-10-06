@@ -30,6 +30,9 @@ public class SquareView extends View {
     private final int row;
     private final int col;
 
+    private float originX = 40;
+    private float originY = 40;
+
     public SquareView(Context context, int row, int col) {
         super(context);
         this.row = row;
@@ -43,8 +46,8 @@ public class SquareView extends View {
         paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setColor(Color.WHITE);
 
-        top = (row * s) + (row * p);
-        left = (col * s) + (col * p);
+        top = originY + (row * s) + (row * p);
+        left = originX + (col * s) + (col * p);
         bottom = top + s;
         right = left + s;
         setPivot();
