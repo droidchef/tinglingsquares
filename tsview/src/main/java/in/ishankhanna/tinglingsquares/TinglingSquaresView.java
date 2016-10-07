@@ -7,6 +7,7 @@ import android.animation.PropertyValuesHolder;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.animation.AccelerateInterpolator;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
@@ -62,8 +63,6 @@ public class TinglingSquaresView extends FrameLayout {
                 squareViews[m][n] = new SquareView(ctx, m, n);
             }
         }
-
-
     }
 
     @Override
@@ -182,13 +181,84 @@ public class TinglingSquaresView extends FrameLayout {
         if (moveFromLeftToRight) {
             propertyValuesHolder = PropertyValuesHolder.ofFloat(View.ROTATION, 0, 90);
             moveFromLeftToRight = false;
+            post(middleRowRunnable);
+            post(topRowRunnable);
+            post(bottomRowRunnable);
+
         } else {
             propertyValuesHolder = PropertyValuesHolder.ofFloat(View.ROTATION, 90, 0);
             moveFromLeftToRight = true;
+            int baseDelay = 500;
+            postDelayed(col1Runnable, baseDelay);
+            postDelayed(col2Runnable, baseDelay + 50);
+            postDelayed(col3Runnable, baseDelay + 100);
+            postDelayed(col4Runnable, baseDelay + 150);
         }
-        postDelayed(col1Runnable, 800);
-        postDelayed(col2Runnable, 900);
-        postDelayed(col3Runnable, 1000);
-        postDelayed(col4Runnable, 1100);
     }
+
+    private Runnable middleRowRunnable = new Runnable() {
+        @Override
+        public void run() {
+            AnimatorSet animatorSet = new AnimatorSet();
+            List<Animator> animators = new ArrayList<>();
+            for (int col=3;col>=0;col--) {
+                ObjectAnimator animator = ObjectAnimator.ofPropertyValuesHolder(squareViews[1][col], propertyValuesHolder);
+                animator.setInterpolator(new AccelerateInterpolator(2));
+                setDurationForAnimator(col, animator);
+                animators.add(animator);
+            }
+            animatorSet.playSequentially(animators);
+            animatorSet.start();
+        }
+    };
+
+    private Runnable topRowRunnable = new Runnable() {
+        @Override
+        public void run() {
+            AnimatorSet animatorSet = new AnimatorSet();
+            List<Animator> animators = new ArrayList<>();
+            for (int col=3;col>=0;col--) {
+                ObjectAnimator animator = ObjectAnimator.ofPropertyValuesHolder(squareViews[0][col], propertyValuesHolder);
+                animator.setInterpolator(new AccelerateInterpolator(2));
+                setDurationForAnimator(col, animator);
+                animators.add(animator);
+            }
+            animatorSet.playSequentially(animators);
+            animatorSet.start();
+        }
+    };
+
+    private void setDurationForAnimator(int col, ObjectAnimator animator) {
+        switch (col) {
+            case 0:
+                animator.setDuration(475);
+                break;
+            case 1:
+                animator.setDuration(450);
+                break;
+            case 2:
+                animator.setDuration(425);
+                break;
+            case 3:
+                animator.setDuration(400);
+                break;
+        }
+    }
+
+    private Runnable bottomRowRunnable = new Runnable() {
+        @Override
+        public void run() {
+            AnimatorSet animatorSet = new AnimatorSet();
+            List<Animator> animators = new ArrayList<>();
+            for (int col=3;col>=0;col--) {
+                ObjectAnimator animator = ObjectAnimator.ofPropertyValuesHolder(squareViews[2][col], propertyValuesHolder);
+                animator.setInterpolator(new AccelerateInterpolator(2));
+                setDurationForAnimator(col, animator);
+                animators.add(animator);
+            }
+            animatorSet.playSequentially(animators);
+            animatorSet.start();
+        }
+    };
+
 }
