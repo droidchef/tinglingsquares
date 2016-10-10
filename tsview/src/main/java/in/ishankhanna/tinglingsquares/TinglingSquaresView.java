@@ -28,12 +28,17 @@ public class TinglingSquaresView extends FrameLayout {
     private int padding = 8;
     private int w,h;
     private boolean moveFromLeftToRight = true;
-    private PropertyValuesHolder propertyValuesHolder;
+    private PropertyValuesHolder pvhLeftToRightAnimation;
+    private PropertyValuesHolder pvhRightToLeftAnimation;
 
-    private ObjectAnimator square1, square2, square3, square4, square5, square6, square7, square8,
-            square9, square10, square11, square12;
+    private ObjectAnimator[] animatorsLeftToRight = new ObjectAnimator[12];
+    private ObjectAnimator[] animatorsRightToLeft = new ObjectAnimator[12];
 
-    private AnimatorSet column1Animation,column2Animation,column3Animation,column4Animation;
+    private AnimatorSet column1AnimationLTR, column2AnimationLTR, column3AnimationLTR, column4AnimationLTR;
+
+    private AnimatorSet column1AnimationRTL, column2AnimationRTL, column3AnimationRTL, column4AnimationRTL;
+
+    private boolean shouldAnimate = true;
 
     public TinglingSquaresView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -69,135 +74,248 @@ public class TinglingSquaresView extends FrameLayout {
             }
         }
 
-        propertyValuesHolder = PropertyValuesHolder.ofFloat(View.ROTATION, 0, 90);
+        pvhLeftToRightAnimation = PropertyValuesHolder.ofFloat(View.ROTATION, 0, 90);
+        pvhRightToLeftAnimation = PropertyValuesHolder.ofFloat(View.ROTATION, 90, 0);
 
-        square1 = ObjectAnimator.ofPropertyValuesHolder(squareViews[0][0], propertyValuesHolder);
-        square2 = ObjectAnimator.ofPropertyValuesHolder(squareViews[0][1], propertyValuesHolder);
-        square3 = ObjectAnimator.ofPropertyValuesHolder(squareViews[0][2], propertyValuesHolder);
-        square4 = ObjectAnimator.ofPropertyValuesHolder(squareViews[0][3], propertyValuesHolder);
-//        square1.setDuration(LEFT_TO_RIGHT_ANIM_TIME - 200);
-//        square2.setDuration(LEFT_TO_RIGHT_ANIM_TIME - 150);
-//        square3.setDuration(LEFT_TO_RIGHT_ANIM_TIME - 50);
-//        square4.setDuration(LEFT_TO_RIGHT_ANIM_TIME);
+        int m=0,n=0;
+        for (int i=0;i<12; i++) {
+            animatorsLeftToRight[i] = ObjectAnimator.ofPropertyValuesHolder(squareViews[m][n], pvhLeftToRightAnimation);
+            switch (m) {
+                case 0:
+                    animatorsLeftToRight[i].setDuration((int)(LEFT_TO_RIGHT_ANIM_TIME * 0.75f));
+                    break;
+                case 1:
+                    animatorsLeftToRight[i].setDuration((int)(LEFT_TO_RIGHT_ANIM_TIME * 0.40f));
+                    break;
+                case 2:
+                    animatorsLeftToRight[i].setDuration((int)(LEFT_TO_RIGHT_ANIM_TIME * 0.60f));
+                    break;
+            }
+            n++;
+            if (n > 3) {
+                m++;
+                n = 0;
+            }
+        }
 
-        square5 = ObjectAnimator.ofPropertyValuesHolder(squareViews[1][0], propertyValuesHolder);
-        square6 = ObjectAnimator.ofPropertyValuesHolder(squareViews[1][1], propertyValuesHolder);
-        square7 = ObjectAnimator.ofPropertyValuesHolder(squareViews[1][2], propertyValuesHolder);
-        square8 = ObjectAnimator.ofPropertyValuesHolder(squareViews[1][3], propertyValuesHolder);
-//        square5.setDuration(LEFT_TO_RIGHT_ANIM_TIME - 200);
-//        square6.setDuration(LEFT_TO_RIGHT_ANIM_TIME - 150);
-//        square7.setDuration(LEFT_TO_RIGHT_ANIM_TIME - 100);
-//        square8.setDuration(LEFT_TO_RIGHT_ANIM_TIME);
+        m=0;n=0;
 
-        square9 = ObjectAnimator.ofPropertyValuesHolder(squareViews[2][0], propertyValuesHolder);
-        square10 = ObjectAnimator.ofPropertyValuesHolder(squareViews[2][1], propertyValuesHolder);
-        square11 = ObjectAnimator.ofPropertyValuesHolder(squareViews[2][2], propertyValuesHolder);
-        square12 = ObjectAnimator.ofPropertyValuesHolder(squareViews[2][3], propertyValuesHolder);
-//        square10.setDuration(LEFT_TO_RIGHT_ANIM_TIME - 150);
-//        square11.setDuration(LEFT_TO_RIGHT_ANIM_TIME - 50);
-//        square9.setDuration(LEFT_TO_RIGHT_ANIM_TIME - 200);
-//        square12.setDuration(LEFT_TO_RIGHT_ANIM_TIME);
+        for (int i=0;i<12;i++) {
+            animatorsRightToLeft[i] = ObjectAnimator.ofPropertyValuesHolder(squareViews[m][n], pvhRightToLeftAnimation);
+            n++;
+            if (n > 3) {
+                m++;
+                n = 0;
+            }
+        }
 
-        column4Animation = new AnimatorSet();
-        column4Animation.play(square4).with(square12);
+        column4AnimationLTR = new AnimatorSet();
+        column4AnimationLTR.play(animatorsLeftToRight[3]).with(animatorsLeftToRight[11]);
 
-        column3Animation = new AnimatorSet();
-        column3Animation.play(square3).with(square11);
+        column3AnimationLTR = new AnimatorSet();
+        column3AnimationLTR.play(animatorsLeftToRight[2]).with(animatorsLeftToRight[10]);
 
-        column2Animation = new AnimatorSet();
-        column2Animation.play(square2).with(square10);
+        column2AnimationLTR = new AnimatorSet();
+        column2AnimationLTR.play(animatorsLeftToRight[1]).with(animatorsLeftToRight[9]);
 
-        column1Animation = new AnimatorSet();
-        column1Animation.play(square1).with(square9);
+        column1AnimationLTR = new AnimatorSet();
+        column1AnimationLTR.play(animatorsLeftToRight[0]).with(animatorsLeftToRight[8]);
 
-        column1Animation.addListener(new AnimatorListenerAdapter() {
+        column1AnimationLTR.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
-                setupAnimationTriggerListeners();
+                setupLeftToRightAnimationTriggers();
+                runAnimation(500);
+                System.out.println("Animation finished");
             }
         });
 
-        setupAnimationTriggerListeners();
+        setupLeftToRightAnimationTriggers();
+
+        column1AnimationRTL = new AnimatorSet();
+        column1AnimationRTL.play(animatorsRightToLeft[4]).with(animatorsRightToLeft[0]);
+
+        column2AnimationRTL = new AnimatorSet();
+        column2AnimationRTL.play(animatorsRightToLeft[5]).with(animatorsRightToLeft[1]);
+
+        column3AnimationRTL = new AnimatorSet();
+        column3AnimationRTL.play(animatorsRightToLeft[6]).with(animatorsRightToLeft[2]);
+
+        column4AnimationRTL = new AnimatorSet();
+        column4AnimationRTL.play(animatorsRightToLeft[7]).with(animatorsRightToLeft[3]);
+
+        column4AnimationRTL.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                setupRightToLeftAnimationTriggers();
+                runAnimation(500);
+                System.out.println("Animation RTL Finished");
+            }
+        });
+
+        setupRightToLeftAnimationTriggers();
+    }
+
+    private void setupLeftToRightAnimationTriggers() {
+        animatorsLeftToRight[7].addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+
+                if (animation.getAnimatedFraction() > 0.25f) {
+                    column4AnimationLTR.start();
+                    animatorsLeftToRight[7].removeAllUpdateListeners();
+                }
+
+            }
+        });
+
+        animatorsLeftToRight[6].addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+
+                if (animation.getAnimatedFraction() > 0.25f) {
+                    column3AnimationLTR.start();
+                    animatorsLeftToRight[6].removeAllUpdateListeners();
+                }
+
+            }
+        });
+
+        animatorsLeftToRight[5].addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+
+                if (animation.getAnimatedFraction() > 0.25f) {
+                    column2AnimationLTR.start();
+                    animatorsLeftToRight[5].removeAllUpdateListeners();
+                }
+
+            }
+        });
+
+        animatorsLeftToRight[4].addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+
+                if (animation.getAnimatedFraction() > 0.25f) {
+                    column1AnimationLTR.start();
+                    animatorsLeftToRight[4].removeAllUpdateListeners();
+                }
+
+            }
+        });
+
+        animatorsLeftToRight[3].addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                if (animation.getAnimatedFraction() > 0.75f) {
+                    animatorsLeftToRight[6].start();
+                    animatorsLeftToRight[3].removeAllUpdateListeners();
+                }
+            }
+        });
+
+        animatorsLeftToRight[2].addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                if (animation.getAnimatedFraction() > 0.75f) {
+                    animatorsLeftToRight[5].start();
+                    animatorsLeftToRight[2].removeAllUpdateListeners();
+                }
+            }
+        });
+
+        animatorsLeftToRight[1].addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                if (animation.getAnimatedFraction() > 0.75f) {
+                    animatorsLeftToRight[4].start();
+                    animatorsLeftToRight[1].removeAllUpdateListeners();
+                }
+            }
+        });
 
     }
 
-    private void setupAnimationTriggerListeners() {
-        square8.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+    private void setupRightToLeftAnimationTriggers() {
+
+        animatorsRightToLeft[8].addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
 
                 if (animation.getAnimatedFraction() > 0.25f) {
-                    column4Animation.start();
-                    square8.removeAllUpdateListeners();
+                    column1AnimationRTL.start();
+                    animatorsRightToLeft[8].removeAllUpdateListeners();
                 }
 
             }
         });
 
-
-        square7.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+        animatorsRightToLeft[4].addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
 
-                if (animation.getAnimatedFraction() > 0.25f) {
-                    column3Animation.start();
-                    square7.removeAllUpdateListeners();
-                }
-
-            }
-        });
-
-        square6.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-
-                if (animation.getAnimatedFraction() > 0.25f) {
-                    column2Animation.start();
-                    square6.removeAllUpdateListeners();
-                }
-
-            }
-        });
-
-        square5.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-
-                if (animation.getAnimatedFraction() > 0.25f) {
-                    column1Animation.start();
-                    square5.removeAllUpdateListeners();
-                }
-
-            }
-        });
-
-        square4.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
                 if (animation.getAnimatedFraction() > 0.75f) {
-                    square7.start();
-                    square4.removeAllUpdateListeners();
+                    animatorsRightToLeft[9].start();
+                    animatorsRightToLeft[4].removeAllUpdateListeners();
+                }
+
+            }
+        });
+
+        animatorsRightToLeft[9].addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+
+                if (animation.getAnimatedFraction() > 0.25f) {
+                    column2AnimationRTL.start();
+                    animatorsRightToLeft[9].removeAllUpdateListeners();
                 }
             }
         });
 
-        square3.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+        animatorsRightToLeft[5].addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
+
                 if (animation.getAnimatedFraction() > 0.75f) {
-                    square6.start();
-                    square3.removeAllUpdateListeners();
+                    animatorsRightToLeft[10].start();
+                    animatorsRightToLeft[5].removeAllUpdateListeners();
                 }
             }
         });
 
-        square2.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+        animatorsRightToLeft[10].addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
+
+                if (animation.getAnimatedFraction() > 0.25f) {
+                    column3AnimationRTL.start();
+                    animatorsRightToLeft[10].removeAllUpdateListeners();
+                }
+            }
+        });
+
+        animatorsRightToLeft[6].addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+
                 if (animation.getAnimatedFraction() > 0.75f) {
-                    square5.start();
-                    square2.removeAllUpdateListeners();
+                    animatorsRightToLeft[11].start();
+                    animatorsRightToLeft[6].removeAllUpdateListeners();
+                }
+            }
+        });
+
+        animatorsRightToLeft[11].addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+
+                if (animation.getAnimatedFraction() > 0.25f) {
+                    column4AnimationRTL.start();
+                    animatorsRightToLeft[11].removeAllUpdateListeners();
                 }
             }
         });
@@ -215,23 +333,32 @@ public class TinglingSquaresView extends FrameLayout {
         }
     }
 
-    public void runAnimation() {
+    public void runAnimation(long delay) {
         if (moveFromLeftToRight) {
-            propertyValuesHolder = PropertyValuesHolder.ofFloat(View.ROTATION, 0, 90);
             moveFromLeftToRight = false;
-            post(animationRunnable);
+            postDelayed(animationRunnableLeftToRight,delay);
         } else {
-            propertyValuesHolder = PropertyValuesHolder.ofFloat(View.ROTATION, 90, 0);
             moveFromLeftToRight = true;
-            post(animationRunnable);
+            postDelayed(animationRunnableRightToLeft,delay);
         }
     }
 
-    private Runnable animationRunnable = new Runnable() {
+    private Runnable animationRunnableLeftToRight = new Runnable() {
         @Override
         public void run() {
-            square8.start();
+            animatorsLeftToRight[7].start();
         }
     };
 
+    private Runnable animationRunnableRightToLeft = new Runnable() {
+        @Override
+        public void run() {
+            animatorsRightToLeft[8].start();
+        }
+    };
+
+    @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        super.onLayout(changed, left, top, right, bottom);
+    }
 }
