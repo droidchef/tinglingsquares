@@ -5,7 +5,6 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
-import android.animation.ValueAnimator;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
@@ -18,7 +17,9 @@ import android.widget.RelativeLayout;
 
 public class TinglingSquaresView extends FrameLayout {
 
-    public static final int LEFT_TO_RIGHT_ANIM_TIME = 400;
+    public static int ANIMATION_TIME_BASE = 500;
+    public static float LAG_FACTOR = 0.5f;
+
     public static final float THRESHOLD_TO_TRIGGER_NEXT_ANIMATION = 0.7f;
     SquareView[][] squareViews = new SquareView[3][4];
 
@@ -67,13 +68,17 @@ public class TinglingSquaresView extends FrameLayout {
 
     }
 
-    private void init() {
+    public void init() {
         for (int m=0;m<3;m++) {
             for (int n=0;n<4;n++) {
                 squareViews[m][n] = new SquareView(ctx, m, n);
             }
         }
 
+        initAnimations();
+    }
+
+    public void initAnimations() {
         pvhLeftToRightAnimation = PropertyValuesHolder.ofFloat(View.ROTATION, 0, 90);
         pvhRightToLeftAnimation = PropertyValuesHolder.ofFloat(View.ROTATION, 90, 0);
 
@@ -82,13 +87,13 @@ public class TinglingSquaresView extends FrameLayout {
             animatorsLeftToRight[i] = ObjectAnimator.ofPropertyValuesHolder(squareViews[m][n], pvhLeftToRightAnimation);
             switch (m) {
                 case 0:
-                    animatorsLeftToRight[i].setDuration((int)(LEFT_TO_RIGHT_ANIM_TIME * 0.75f));
+                    animatorsLeftToRight[i].setDuration(ANIMATION_TIME_BASE);
                     break;
                 case 1:
-                    animatorsLeftToRight[i].setDuration((int)(LEFT_TO_RIGHT_ANIM_TIME * 0.40f));
+                    animatorsLeftToRight[i].setDuration((int) (ANIMATION_TIME_BASE * LAG_FACTOR));
                     break;
                 case 2:
-                    animatorsLeftToRight[i].setDuration((int)(LEFT_TO_RIGHT_ANIM_TIME * 0.60f));
+                    animatorsLeftToRight[i].setDuration(ANIMATION_TIME_BASE);
                     break;
             }
             n++;
@@ -102,6 +107,17 @@ public class TinglingSquaresView extends FrameLayout {
 
         for (int i=0;i<12;i++) {
             animatorsRightToLeft[i] = ObjectAnimator.ofPropertyValuesHolder(squareViews[m][n], pvhRightToLeftAnimation);
+            switch (m) {
+                case 0:
+                    animatorsRightToLeft[i].setDuration(ANIMATION_TIME_BASE);
+                    break;
+                case 1:
+                    animatorsRightToLeft[i].setDuration(ANIMATION_TIME_BASE);
+                    break;
+                case 2:
+                    animatorsRightToLeft[i].setDuration((int)(ANIMATION_TIME_BASE * LAG_FACTOR));
+                    break;
+            }
             n++;
             if (n > 3) {
                 m++;
@@ -109,214 +125,70 @@ public class TinglingSquaresView extends FrameLayout {
             }
         }
 
-        column4AnimationLTR = new AnimatorSet();
-        column4AnimationLTR.play(animatorsLeftToRight[3]).with(animatorsLeftToRight[11]);
-
-        column3AnimationLTR = new AnimatorSet();
-        column3AnimationLTR.play(animatorsLeftToRight[2]).with(animatorsLeftToRight[10]);
+        column1AnimationLTR = new AnimatorSet();
+        column1AnimationLTR.playTogether(animatorsLeftToRight[0],animatorsLeftToRight[4], animatorsLeftToRight[8]);
 
         column2AnimationLTR = new AnimatorSet();
-        column2AnimationLTR.play(animatorsLeftToRight[1]).with(animatorsLeftToRight[9]);
-
-        column1AnimationLTR = new AnimatorSet();
-        column1AnimationLTR.play(animatorsLeftToRight[0]).with(animatorsLeftToRight[8]);
-
-        column1AnimationLTR.addListener(new AnimatorListenerAdapter() {
+        column2AnimationLTR.playTogether(animatorsLeftToRight[1],animatorsLeftToRight[5], animatorsLeftToRight[9]);
+        column2AnimationLTR.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
-                setupLeftToRightAnimationTriggers();
-                runAnimation(500);
-                System.out.println("Animation finished");
+                column1AnimationLTR.start();
             }
         });
 
-        setupLeftToRightAnimationTriggers();
+        column3AnimationLTR = new AnimatorSet();
+        column3AnimationLTR.playTogether(animatorsLeftToRight[2],animatorsLeftToRight[6], animatorsLeftToRight[10]);
+        column3AnimationLTR.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                column2AnimationLTR.start();
+            }
+        });
 
-        column1AnimationRTL = new AnimatorSet();
-        column1AnimationRTL.play(animatorsRightToLeft[4]).with(animatorsRightToLeft[0]);
 
-        column2AnimationRTL = new AnimatorSet();
-        column2AnimationRTL.play(animatorsRightToLeft[5]).with(animatorsRightToLeft[1]);
-
-        column3AnimationRTL = new AnimatorSet();
-        column3AnimationRTL.play(animatorsRightToLeft[6]).with(animatorsRightToLeft[2]);
+        column4AnimationLTR = new AnimatorSet();
+        column4AnimationLTR.playTogether(animatorsLeftToRight[3],animatorsLeftToRight[7], animatorsLeftToRight[11]);
+        column4AnimationLTR.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                column3AnimationLTR.start();
+            }
+        });
 
         column4AnimationRTL = new AnimatorSet();
-        column4AnimationRTL.play(animatorsRightToLeft[7]).with(animatorsRightToLeft[3]);
+        column4AnimationRTL.playTogether(animatorsRightToLeft[3], animatorsRightToLeft[7], animatorsRightToLeft[11]);
 
-        column4AnimationRTL.addListener(new AnimatorListenerAdapter() {
+        column3AnimationRTL = new AnimatorSet();
+        column3AnimationRTL.playTogether(animatorsRightToLeft[2], animatorsRightToLeft[6], animatorsRightToLeft[10]);
+        column3AnimationRTL.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
-                setupRightToLeftAnimationTriggers();
-                runAnimation(500);
-                System.out.println("Animation RTL Finished");
+                column4AnimationRTL.start();
             }
         });
 
-        setupRightToLeftAnimationTriggers();
-    }
-
-    private void setupLeftToRightAnimationTriggers() {
-        animatorsLeftToRight[7].addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+        column2AnimationRTL = new AnimatorSet();
+        column2AnimationRTL.playTogether(animatorsRightToLeft[1], animatorsRightToLeft[5], animatorsRightToLeft[9]);
+        column2AnimationRTL.addListener(new AnimatorListenerAdapter() {
             @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-
-                if (animation.getAnimatedFraction() > 0.25f) {
-                    column4AnimationLTR.start();
-                    animatorsLeftToRight[7].removeAllUpdateListeners();
-                }
-
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                column3AnimationRTL.start();
             }
         });
 
-        animatorsLeftToRight[6].addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+        column1AnimationRTL = new AnimatorSet();
+        column1AnimationRTL.playTogether(animatorsRightToLeft[0], animatorsRightToLeft[4], animatorsRightToLeft[8]);
+        column1AnimationRTL.addListener(new AnimatorListenerAdapter() {
             @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-
-                if (animation.getAnimatedFraction() > 0.25f) {
-                    column3AnimationLTR.start();
-                    animatorsLeftToRight[6].removeAllUpdateListeners();
-                }
-
-            }
-        });
-
-        animatorsLeftToRight[5].addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-
-                if (animation.getAnimatedFraction() > 0.25f) {
-                    column2AnimationLTR.start();
-                    animatorsLeftToRight[5].removeAllUpdateListeners();
-                }
-
-            }
-        });
-
-        animatorsLeftToRight[4].addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-
-                if (animation.getAnimatedFraction() > 0.25f) {
-                    column1AnimationLTR.start();
-                    animatorsLeftToRight[4].removeAllUpdateListeners();
-                }
-
-            }
-        });
-
-        animatorsLeftToRight[3].addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                if (animation.getAnimatedFraction() > 0.75f) {
-                    animatorsLeftToRight[6].start();
-                    animatorsLeftToRight[3].removeAllUpdateListeners();
-                }
-            }
-        });
-
-        animatorsLeftToRight[2].addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                if (animation.getAnimatedFraction() > 0.75f) {
-                    animatorsLeftToRight[5].start();
-                    animatorsLeftToRight[2].removeAllUpdateListeners();
-                }
-            }
-        });
-
-        animatorsLeftToRight[1].addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                if (animation.getAnimatedFraction() > 0.75f) {
-                    animatorsLeftToRight[4].start();
-                    animatorsLeftToRight[1].removeAllUpdateListeners();
-                }
-            }
-        });
-
-    }
-
-    private void setupRightToLeftAnimationTriggers() {
-
-        animatorsRightToLeft[8].addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-
-                if (animation.getAnimatedFraction() > 0.25f) {
-                    column1AnimationRTL.start();
-                    animatorsRightToLeft[8].removeAllUpdateListeners();
-                }
-
-            }
-        });
-
-        animatorsRightToLeft[4].addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-
-                if (animation.getAnimatedFraction() > 0.75f) {
-                    animatorsRightToLeft[9].start();
-                    animatorsRightToLeft[4].removeAllUpdateListeners();
-                }
-
-            }
-        });
-
-        animatorsRightToLeft[9].addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-
-                if (animation.getAnimatedFraction() > 0.25f) {
-                    column2AnimationRTL.start();
-                    animatorsRightToLeft[9].removeAllUpdateListeners();
-                }
-            }
-        });
-
-        animatorsRightToLeft[5].addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-
-                if (animation.getAnimatedFraction() > 0.75f) {
-                    animatorsRightToLeft[10].start();
-                    animatorsRightToLeft[5].removeAllUpdateListeners();
-                }
-            }
-        });
-
-        animatorsRightToLeft[10].addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-
-                if (animation.getAnimatedFraction() > 0.25f) {
-                    column3AnimationRTL.start();
-                    animatorsRightToLeft[10].removeAllUpdateListeners();
-                }
-            }
-        });
-
-        animatorsRightToLeft[6].addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-
-                if (animation.getAnimatedFraction() > 0.75f) {
-                    animatorsRightToLeft[11].start();
-                    animatorsRightToLeft[6].removeAllUpdateListeners();
-                }
-            }
-        });
-
-        animatorsRightToLeft[11].addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-
-                if (animation.getAnimatedFraction() > 0.25f) {
-                    column4AnimationRTL.start();
-                    animatorsRightToLeft[11].removeAllUpdateListeners();
-                }
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                column2AnimationRTL.start();
             }
         });
     }
@@ -346,19 +218,32 @@ public class TinglingSquaresView extends FrameLayout {
     private Runnable animationRunnableLeftToRight = new Runnable() {
         @Override
         public void run() {
-            animatorsLeftToRight[7].start();
+            column4AnimationLTR.start();
         }
     };
 
     private Runnable animationRunnableRightToLeft = new Runnable() {
         @Override
         public void run() {
-            animatorsRightToLeft[8].start();
+            column1AnimationRTL.start();
         }
     };
 
-    @Override
-    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        super.onLayout(changed, left, top, right, bottom);
+    public static int getAnimationTimeBase() {
+        return ANIMATION_TIME_BASE;
     }
+
+    public static void setAnimationTimeBase(int animationTimeBase) {
+        ANIMATION_TIME_BASE = animationTimeBase;
+    }
+
+    public static float getLagFactor() {
+        return LAG_FACTOR;
+    }
+
+    public static void setLagFactor(float lagFactor) {
+        LAG_FACTOR = lagFactor;
+    }
+
+
 }
