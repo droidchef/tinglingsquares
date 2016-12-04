@@ -6,6 +6,7 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
 import android.content.Context;
+import android.support.annotation.VisibleForTesting;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -17,29 +18,31 @@ import android.widget.RelativeLayout;
 
 public class TinglingSquaresView extends FrameLayout {
 
-    public static int ANIMATION_TIME_BASE = 500;
-    public static float LAG_FACTOR = 0.5f;
-    public static final long ANIMATION_RESTART_DELAY = 150;
-    public static final float THRESHOLD_TO_TRIGGER_NEXT_ANIMATION = 0.7f;
-    SquareView[][] squareViews = new SquareView[3][4];
+    private static int ANIMATION_TIME_BASE = 500;
+
+    private static float LAG_FACTOR = 0.5f;
+
+    private static final long ANIMATION_RESTART_DELAY = 150;
+
+    private final SquareView[][] squareViews = new SquareView[3][4];
 
     private Context ctx;
 
     private int side = 40;
-    private int padding = 8;
-    private int w,h;
-    private boolean moveFromLeftToRight = true;
-    private PropertyValuesHolder pvhLeftToRightAnimation;
-    private PropertyValuesHolder pvhRightToLeftAnimation;
 
-    private ObjectAnimator[] animatorsLeftToRight = new ObjectAnimator[12];
-    private ObjectAnimator[] animatorsRightToLeft = new ObjectAnimator[12];
+    private int padding = 8;
+
+    private boolean moveFromLeftToRight = true;
+
+    private final ObjectAnimator[] animatorsLeftToRight = new ObjectAnimator[12];
+    private final ObjectAnimator[] animatorsRightToLeft = new ObjectAnimator[12];
 
     private AnimatorSet column1AnimationLTR, column2AnimationLTR, column3AnimationLTR, column4AnimationLTR;
 
     private AnimatorSet column1AnimationRTL, column2AnimationRTL, column3AnimationRTL, column4AnimationRTL;
 
-    private boolean shouldAnimate = true;
+    private final AnimatorSet scene1 = new AnimatorSet();
+    private final AnimatorSet scene2 = new AnimatorSet();
 
     public TinglingSquaresView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -79,12 +82,23 @@ public class TinglingSquaresView extends FrameLayout {
     }
 
     public void initAnimations() {
-        pvhLeftToRightAnimation = PropertyValuesHolder.ofFloat(View.ROTATION, 0, 90);
-        pvhRightToLeftAnimation = PropertyValuesHolder.ofFloat(View.ROTATION, 90, 0);
+
+        setupLeftToRightAnimators();
+        setupRightToLeftAnimators();
+
+        scene1.playTogether(column1AnimationRTL, column2AnimationRTL, column3AnimationRTL, column4AnimationRTL);
+        scene2.playTogether(column4AnimationLTR, column2AnimationLTR, column3AnimationLTR, column1AnimationLTR);
+    }
+
+    private void setupLeftToRightAnimators() {
+        PropertyValuesHolder pvhLeftToRightAnimation = PropertyValuesHolder.ofFloat(View
+                .ROTATION, 0, 90);
 
         int m=0,n=0;
+
         for (int i=0;i<12; i++) {
-            animatorsLeftToRight[i] = ObjectAnimator.ofPropertyValuesHolder(squareViews[m][n], pvhLeftToRightAnimation);
+            animatorsLeftToRight[i] = ObjectAnimator.ofPropertyValuesHolder(squareViews[m][n],
+                    pvhLeftToRightAnimation);
             switch (m) {
                 case 0:
                     animatorsLeftToRight[i].setDuration(ANIMATION_TIME_BASE);
@@ -103,10 +117,38 @@ public class TinglingSquaresView extends FrameLayout {
             }
         }
 
-        m=0;n=0;
+        column4AnimationLTR = new AnimatorSet();
+        column4AnimationLTR.playTogether(animatorsLeftToRight[3],animatorsLeftToRight[7], animatorsLeftToRight[11]);
 
+        column3AnimationLTR = new AnimatorSet();
+        column3AnimationLTR.playTogether(animatorsLeftToRight[2],animatorsLeftToRight[6], animatorsLeftToRight[10]);
+        column3AnimationLTR.setStartDelay(getStartDelayForColumn(3, true));
+
+        column2AnimationLTR = new AnimatorSet();
+        column2AnimationLTR.playTogether(animatorsLeftToRight[1],animatorsLeftToRight[5], animatorsLeftToRight[9]);
+        column2AnimationLTR.setStartDelay(getStartDelayForColumn(2, true));
+
+        column1AnimationLTR = new AnimatorSet();
+        column1AnimationLTR.playTogether(animatorsLeftToRight[0],animatorsLeftToRight[4], animatorsLeftToRight[8]);
+        column1AnimationLTR.setStartDelay(getStartDelayForColumn(1, true));
+        column1AnimationLTR.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                runAnimation(ANIMATION_RESTART_DELAY);
+            }
+        });
+
+    }
+
+    private void setupRightToLeftAnimators() {
+        PropertyValuesHolder pvhRightToLeftAnimation = PropertyValuesHolder.ofFloat(View
+                .ROTATION, 90, 0);
+
+        int m=0,n=0;
         for (int i=0;i<12;i++) {
-            animatorsRightToLeft[i] = ObjectAnimator.ofPropertyValuesHolder(squareViews[m][n], pvhRightToLeftAnimation);
+            animatorsRightToLeft[i] = ObjectAnimator.ofPropertyValuesHolder(squareViews[m][n],
+                    pvhRightToLeftAnimation);
             switch (m) {
                 case 0:
                     animatorsRightToLeft[i].setDuration(ANIMATION_TIME_BASE);
@@ -125,76 +167,9 @@ public class TinglingSquaresView extends FrameLayout {
             }
         }
 
-        /**
-         * Begin Animation Scene 2
-         *
-         * In this scene we start animating from left most column towards right.
-         *
-         * The order for rolling the boxes to their position is Bottom, Middle & Top.
-         * So we add some lag in their movements to achieve this effect.
-         *
-         *          TOP
-         *      MIDDLE
-         *  BOTTOM
-         *
-         */
-        column1AnimationLTR = new AnimatorSet();
-        column1AnimationLTR.playTogether(animatorsLeftToRight[0],animatorsLeftToRight[4], animatorsLeftToRight[8]);
-        column1AnimationLTR.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                super.onAnimationEnd(animation);
-                runAnimation(ANIMATION_RESTART_DELAY);
-            }
-        });
-
-        column2AnimationLTR = new AnimatorSet();
-        column2AnimationLTR.playTogether(animatorsLeftToRight[1],animatorsLeftToRight[5], animatorsLeftToRight[9]);
-        column2AnimationLTR.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                super.onAnimationEnd(animation);
-                column1AnimationLTR.start();
-            }
-        });
-
-        column3AnimationLTR = new AnimatorSet();
-        column3AnimationLTR.playTogether(animatorsLeftToRight[2],animatorsLeftToRight[6], animatorsLeftToRight[10]);
-        column3AnimationLTR.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                super.onAnimationEnd(animation);
-                column2AnimationLTR.start();
-            }
-        });
-
-
-        column4AnimationLTR = new AnimatorSet();
-        column4AnimationLTR.playTogether(animatorsLeftToRight[3],animatorsLeftToRight[7], animatorsLeftToRight[11]);
-        column4AnimationLTR.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                super.onAnimationEnd(animation);
-                column3AnimationLTR.start();
-            }
-        });
-
-        /* Scene 2 End Here */
-
-        /**
-         * Animation Scene 1 begins here.
-         *
-         * In this scene we animate from Right most column to the Left.
-         *
-         * The order for rolling the boxes here is Middle, Top & Bottom.
-         *
-         *      TOP
-         *  MIDDLE
-         *      BOTTOM
-         */
-
         column4AnimationRTL = new AnimatorSet();
         column4AnimationRTL.playTogether(animatorsRightToLeft[3], animatorsRightToLeft[7], animatorsRightToLeft[11]);
+        column4AnimationRTL.setStartDelay(getStartDelayForColumn(4, false));
         column4AnimationRTL.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
@@ -203,45 +178,22 @@ public class TinglingSquaresView extends FrameLayout {
             }
         });
 
-
         column3AnimationRTL = new AnimatorSet();
         column3AnimationRTL.playTogether(animatorsRightToLeft[2], animatorsRightToLeft[6], animatorsRightToLeft[10]);
-        column3AnimationRTL.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                super.onAnimationEnd(animation);
-                column4AnimationRTL.start();
-            }
-        });
+        column3AnimationRTL.setStartDelay(getStartDelayForColumn(3, false));
 
         column2AnimationRTL = new AnimatorSet();
         column2AnimationRTL.playTogether(animatorsRightToLeft[1], animatorsRightToLeft[5], animatorsRightToLeft[9]);
-        column2AnimationRTL.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                super.onAnimationEnd(animation);
-                column3AnimationRTL.start();
-            }
-        });
+        column2AnimationRTL.setStartDelay(getStartDelayForColumn(2, false));
 
         column1AnimationRTL = new AnimatorSet();
         column1AnimationRTL.playTogether(animatorsRightToLeft[0], animatorsRightToLeft[4], animatorsRightToLeft[8]);
-        column1AnimationRTL.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                super.onAnimationEnd(animation);
-                column2AnimationRTL.start();
-            }
-        });
 
-        /* Scene 1 Ends Here */
     }
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        this.w = w;
-        this.h = h;
         for (int m=0;m<3;m++) {
             for (int n=0;n<4;n++) {
                 addView(squareViews[m][n]);
@@ -262,32 +214,29 @@ public class TinglingSquaresView extends FrameLayout {
     private Runnable animationRunnableLeftToRight = new Runnable() {
         @Override
         public void run() {
-            column4AnimationLTR.start();
+            scene2.start();
         }
     };
 
     private Runnable animationRunnableRightToLeft = new Runnable() {
         @Override
         public void run() {
-            column1AnimationRTL.start();
+            scene1.start();
         }
     };
 
-    public static int getAnimationTimeBase() {
-        return ANIMATION_TIME_BASE;
-    }
 
     public static void setAnimationTimeBase(int animationTimeBase) {
         ANIMATION_TIME_BASE = animationTimeBase;
-    }
-
-    public static float getLagFactor() {
-        return LAG_FACTOR;
     }
 
     public static void setLagFactor(float lagFactor) {
         LAG_FACTOR = lagFactor;
     }
 
-
+    @VisibleForTesting
+    public static long getStartDelayForColumn(int columnNumber, boolean isLTR) {
+        if (isLTR) columnNumber = 4 - columnNumber;
+        return (long) (ANIMATION_TIME_BASE * 0.3f * columnNumber);
+    }
 }
