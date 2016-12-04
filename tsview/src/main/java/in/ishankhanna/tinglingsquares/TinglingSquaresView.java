@@ -19,7 +19,7 @@ public class TinglingSquaresView extends FrameLayout {
 
     public static int ANIMATION_TIME_BASE = 500;
     public static float LAG_FACTOR = 0.5f;
-
+    public static final long ANIMATION_RESTART_DELAY = 150;
     public static final float THRESHOLD_TO_TRIGGER_NEXT_ANIMATION = 0.7f;
     SquareView[][] squareViews = new SquareView[3][4];
 
@@ -112,7 +112,7 @@ public class TinglingSquaresView extends FrameLayout {
                     animatorsRightToLeft[i].setDuration(ANIMATION_TIME_BASE);
                     break;
                 case 1:
-                    animatorsRightToLeft[i].setDuration(ANIMATION_TIME_BASE);
+                    animatorsRightToLeft[i].setDuration((int)(ANIMATION_TIME_BASE * (LAG_FACTOR + 0.25f)));
                     break;
                 case 2:
                     animatorsRightToLeft[i].setDuration((int)(ANIMATION_TIME_BASE * LAG_FACTOR));
@@ -125,8 +125,28 @@ public class TinglingSquaresView extends FrameLayout {
             }
         }
 
+        /**
+         * Begin Animation Scene 2
+         *
+         * In this scene we start animating from left most column towards right.
+         *
+         * The order for rolling the boxes to their position is Bottom, Middle & Top.
+         * So we add some lag in their movements to achieve this effect.
+         *
+         *          TOP
+         *      MIDDLE
+         *  BOTTOM
+         *
+         */
         column1AnimationLTR = new AnimatorSet();
         column1AnimationLTR.playTogether(animatorsLeftToRight[0],animatorsLeftToRight[4], animatorsLeftToRight[8]);
+        column1AnimationLTR.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                runAnimation(ANIMATION_RESTART_DELAY);
+            }
+        });
 
         column2AnimationLTR = new AnimatorSet();
         column2AnimationLTR.playTogether(animatorsLeftToRight[1],animatorsLeftToRight[5], animatorsLeftToRight[9]);
@@ -159,8 +179,30 @@ public class TinglingSquaresView extends FrameLayout {
             }
         });
 
+        /* Scene 2 End Here */
+
+        /**
+         * Animation Scene 1 begins here.
+         *
+         * In this scene we animate from Right most column to the Left.
+         *
+         * The order for rolling the boxes here is Middle, Top & Bottom.
+         *
+         *      TOP
+         *  MIDDLE
+         *      BOTTOM
+         */
+
         column4AnimationRTL = new AnimatorSet();
         column4AnimationRTL.playTogether(animatorsRightToLeft[3], animatorsRightToLeft[7], animatorsRightToLeft[11]);
+        column4AnimationRTL.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                runAnimation(ANIMATION_RESTART_DELAY / 2);
+            }
+        });
+
 
         column3AnimationRTL = new AnimatorSet();
         column3AnimationRTL.playTogether(animatorsRightToLeft[2], animatorsRightToLeft[6], animatorsRightToLeft[10]);
@@ -191,6 +233,8 @@ public class TinglingSquaresView extends FrameLayout {
                 column2AnimationRTL.start();
             }
         });
+
+        /* Scene 1 Ends Here */
     }
 
     @Override
