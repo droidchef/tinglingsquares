@@ -8,7 +8,7 @@ android {
         minSdkVersion 14
         targetSdkVersion 24
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.0"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
@@ -29,3 +29,32 @@ dependencies {
     compile 'com.android.support:appcompat-v7:24.2.1'
     testCompile 'junit:junit:4.12'
 }
+
+ext {
+    bintrayRepo = 'maven'
+    bintrayName = 'tsview'   // Has to be same as your library module name
+
+    publishedGroupId = 'com.github.ishan1604'
+    libraryName = 'TinglingSquaresView'
+    artifact = 'tsview'     // Has to be same as your library module name
+
+    libraryDescription = 'A simple animated progress view for Android.'
+
+    // Your github repo link
+    siteUrl = 'https://github.com/ishan1604/tinglingsqaures'
+    gitUrl = 'https://github.com/ishan1604/tinglingsqaures.git'
+    githubRepository= 'ishan1604/tinglingsqaures'
+
+    libraryVersion = '1.0.0'
+
+    developerId = 'ishan1604'
+    developerName = 'Ishan Khanna'
+    developerEmail = 'ishan1604@gmail.org'
+
+    licenseName = 'The Apache Software License, Version 2.0'
+    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+    allLicenses = ["Apache-2.0"]
+}
+
+apply from: 'https://raw.githubusercontent.com/nisrulz/JCenter/master/installv1.gradle'
+apply from: 'https://raw.githubusercontent.com/nisrulz/JCenter/master/bintrayv1.gradle'
