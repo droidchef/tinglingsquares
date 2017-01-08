@@ -24,6 +24,6 @@ public class TinglingSquaresViewTest {
 
         result = TinglingSquaresView.getStartDelayForColumn(3, true);
 
-        assertEquals(375, result);
+        assertEquals(150, result);
     }
 }
