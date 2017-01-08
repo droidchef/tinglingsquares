@@ -41,9 +41,9 @@ ext {
     libraryDescription = 'A simple animated progress view for Android.'
 
     // Your github repo link
-    siteUrl = 'https://github.com/ishan1604/tinglingsqaures'
-    gitUrl = 'https://github.com/ishan1604/tinglingsqaures.git'
-    githubRepository= 'ishan1604/tinglingsqaures'
+    siteUrl = 'https://github.com/ishan1604/tinglingsquares'
+    gitUrl = 'https://github.com/ishan1604/tinglingsquares.git'
+    githubRepository= 'ishan1604/tinglingsquares'
 
     libraryVersion = '1.0.0'
 

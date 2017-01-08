@@ -6,7 +6,6 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
 import android.content.Context;
-import android.support.annotation.VisibleForTesting;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -233,7 +232,6 @@ public class TinglingSquaresView extends FrameLayout {
         LAG_FACTOR = lagFactor;
     }
 
-    @VisibleForTesting
     public static long getStartDelayForColumn(int columnNumber, boolean isLTR) {
         int ADDITIONAL_LAG_REDUCER = -50;
         if (isLTR) {
