@@ -225,7 +225,6 @@ public class TinglingSquaresView extends FrameLayout {
         }
     };
 
-
     public static void setAnimationTimeBase(int animationTimeBase) {
         ANIMATION_TIME_BASE = animationTimeBase;
     }
@@ -236,7 +235,11 @@ public class TinglingSquaresView extends FrameLayout {
 
     @VisibleForTesting
     public static long getStartDelayForColumn(int columnNumber, boolean isLTR) {
-        if (isLTR) columnNumber = 4 - columnNumber;
-        return (long) (ANIMATION_TIME_BASE * 0.3f * columnNumber);
+        int ADDITIONAL_LAG_REDUCER = -50;
+        if (isLTR) {
+            columnNumber = 4 - columnNumber;
+            ADDITIONAL_LAG_REDUCER = 0;
+        }
+        return (long) (ANIMATION_TIME_BASE * 0.3f * columnNumber) + ADDITIONAL_LAG_REDUCER;
     }
 }
