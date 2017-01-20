@@ -32,15 +32,14 @@ dependencies {
 
 ext {
     bintrayRepo = 'maven'
-    bintrayName = 'tsview'   // Has to be same as your library module name
+    bintrayName = 'tingling-squares-view'
 
     publishedGroupId = 'com.github.ishan1604'
     libraryName = 'TinglingSquaresView'
-    artifact = 'tsview'     // Has to be same as your library module name
+    artifact = 'tsview'
 
     libraryDescription = 'A simple animated progress view for Android.'
 
-    // Your github repo link
     siteUrl = 'https://github.com/ishan1604/tinglingsquares'
     gitUrl = 'https://github.com/ishan1604/tinglingsquares.git'
     githubRepository= 'ishan1604/tinglingsquares'
