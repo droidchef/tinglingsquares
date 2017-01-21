@@ -15,49 +15,7 @@
     <in.ishankhanna.tinglingsquares.TinglingSquaresView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:id="@+id/tinglingSquaresView"/>
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="number"
-        android:ems="10"
-        android:id="@+id/et_base_anim_time"
-        android:hint="Base Animation Time in ms"
-        android:layout_below="@+id/et_lag_factor"
-        android:layout_alignLeft="@+id/et_lag_factor"
-        android:layout_alignStart="@+id/et_lag_factor"
-        android:layout_marginTop="17dp"/>
-
-    <Button
-        android:text="Update"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/button2"
-        android:layout_below="@+id/et_base_anim_time"
-        android:layout_alignLeft="@+id/button"
-        android:layout_alignStart="@+id/button"
-        android:layout_marginTop="33dp"/>
-
-    <Button
-        android:text="Animate"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/button"
-        android:layout_below="@+id/button2"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="11dp"/>
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="numberDecimal"
-        android:hint="Lag Factor (0.00 - 1.00)"
-        android:ems="10"
-        android:id="@+id/et_lag_factor"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"/>
-
+        android:id="@+id/tinglingSquaresView"
+        android:layout_centerInParent="true"/>
 
 </RelativeLayout>
