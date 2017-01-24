@@ -6,7 +6,7 @@ A delightful progressbar animation.
 
 
 # Demo
-![TinglingSquaresView Demo](https://raw.githubusercontent.com/ishan1604/ts/master/media/tingling-squares-demo.gif)
+![TinglingSquaresView Demo](https://raw.githubusercontent.com/ishan1604/ts/master/media/demo.gif)
 
 # Download
 
