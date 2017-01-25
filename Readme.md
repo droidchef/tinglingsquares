@@ -2,11 +2,8 @@
 
 A delightful progressbar animation.
 
-[![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-UberProgressView-brightgreen.svg?style=flat)](http://android-arsenal.com/details/1/3567)
-
-
 # Demo
-![TinglingSquaresView Demo](https://raw.githubusercontent.com/ishan1604/ts/master/media/demo.gif)
+![TinglingSquaresView Demo](https://raw.githubusercontent.com/ishan1604/tsview/master/media/demo.gif)
 
 # Download
 
