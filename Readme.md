@@ -3,7 +3,7 @@
 A delightful progressbar animation.
 
 # Demo
-![TinglingSquaresView Demo](https://raw.githubusercontent.com/ishan1604/tsview/master/media/demo.gif)
+![TinglingSquaresView Demo](https://raw.githubusercontent.com/ishan1604/tinglingsquares/master/media/demo.gif)
 
 # Download
 
