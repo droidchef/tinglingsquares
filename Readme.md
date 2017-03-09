@@ -36,7 +36,7 @@ Animated Loader by Divan Raj on [Material Up](https://material.uplabs.com/posts/
 # License
 
 ```
-Copyright 2015 Ishan Khanna
+Copyright 2017 Ishan Khanna, Divan Raj
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
